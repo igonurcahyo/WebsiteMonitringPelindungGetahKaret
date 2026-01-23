@@ -1,0 +1,64 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+  margin: 0;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+  color: #2c3e50;
+}
+
+.container {
+  max-width: 800px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.card {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.value {
+  font-size: 32px;
+  font-weight: bold;
+  margin-top: 10px;
+  color: #3498db;
+}
+
+.keterangan {
+  margin-top: 5px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.ket-bagus {
+  color: green;
+}
+
+.ket-buruk {
+  color: red;
+}
+
+.status-bagus {
+  color: green;
+  font-weight: bold;
+}
+
+.status-buruk {
+  color: red;
+  font-weight: bold;
+}
+
+.status-center {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+}
