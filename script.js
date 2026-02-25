@@ -131,17 +131,30 @@ sensorRef.on("value", (snapshot) => {
   }
 
   // -------- KELEMBAPAN UDARA --------
-  const humVal = data.kelembapan;
-  document.getElementById("hum").innerText = humVal + " %";
+ // -------- KELEMBAPAN UDARA --------
+const humVal = data.kelembapan;
+document.getElementById("hum").innerText = humVal + " %";
 
-  const humKet = document.getElementById("humKet");
-  if (humVal < 60) {
-    humKet.innerText = "IDEAL";
-    humKet.className = "keterangan ket-bagus";
-  } else {
-    humKet.innerText = "LEMBAB";
-    humKet.className = "keterangan ket-buruk";
-  }
+const humKet = document.getElementById("humKet");
+
+if (humVal >= 40 && humVal <= 70){
+
+  humKet.innerText = "IDEAL";
+  humKet.className = "keterangan ket-bagus";
+
+}
+else if (humVal > 70){
+
+  humKet.innerText = "LEMBAB";
+  humKet.className = "keterangan ket-buruk";
+
+}
+else{
+
+  humKet.innerText = "KERING";
+  humKet.className = "keterangan ket-bagus";
+
+}
 });
 
 // ================== STATUS SISTEM ==================
