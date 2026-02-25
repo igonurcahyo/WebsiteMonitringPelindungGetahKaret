@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -49,3 +50,56 @@
   <script src="script.js"></script>
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Monitoring Pelindung Hasil Sadap Karet</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <h1>Monitoring Pelindung Hasil Sadap Karet</h1>
+
+  <div class="container">
+
+    <div class="card">
+      <h3>Sensor Hujan</h3>
+      <div class="value" id="hujan">-</div>
+      <div class="keterangan" id="hujanKet">-</div>
+    </div>
+
+    <div class="card">
+      <h3>Sensor Cahaya (LDR)</h3>
+      <div class="value" id="ldr">-</div>
+      <div class="keterangan" id="ldrKet">-</div>
+    </div>
+
+    <div class="card">
+      <h3>Kelembapan Udara</h3>
+      <div class="value" id="hum">-</div>
+      <div class="keterangan" id="humKet">-</div>
+    </div>
+
+    <div class="status-center">
+      <div class="card">
+        <h3>Status Sistem</h3>
+        <div class="value" id="state">-</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- JavaScript -->
+  <script src="script.js"></script>
+</body>
+</html>
+>>>>>>> 8769cc3 (p)
