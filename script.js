@@ -108,7 +108,9 @@ function getChartOptions(name, color) {
       height: 240,
       fontFamily: 'inherit',
       toolbar: { show: false },
-      sparkline: { enabled: false }
+      sparkline: { enabled: false },
+      zoom: { enabled: false },
+      selection: { enabled: false }
     },
     colors: [color],
     stroke: { curve: 'smooth', width: 2 },
