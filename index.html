@@ -1,48 +1,101 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Monitoring Pelindung Hasil Sadap Karet</title>
+  <title>Monitoring Pelindung Getah Karet</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Sistem monitoring real-time pelindung hasil sadap karet berbasis sensor IoT.">
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <!-- ApexCharts CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
   <!-- CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <h1>Monitoring Pelindung Hasil Sadap Karet</h1>
+  <div class="page-wrapper">
 
-  <div class="container">
+    <!-- HEADER -->
+    <header class="header">
+      <div class="header-main">
+        <h1>Monitoring Karet</h1>
+        <div class="live-badge">
+          <span class="dot"></span>
+          Live
+        </div>
+      </div>
+      <p class="header-sub">Sistem IoT Pelindung Hasil Sadap &mdash; Data Real-Time</p>
+    </header>
 
-    <div class="card">
-      <h3>Sensor Hujan</h3>
-      <div class="value" id="hujan">-</div>
-      <div class="keterangan" id="hujanKet">-</div>
-    </div>
+    <!-- SENSOR CARDS -->
+    <div class="container">
 
-    <div class="card">
-      <h3>Sensor Cahaya (LDR)</h3>
-      <div class="value" id="ldr">-</div>
-      <div class="keterangan" id="ldrKet">-</div>
-    </div>
-
-    <div class="card">
-      <h3>Kelembapan Udara</h3>
-      <div class="value" id="hum">-</div>
-      <div class="keterangan" id="humKet">-</div>
-    </div>
-
-    <div class="status-center">
       <div class="card">
-        <h3>Status Sistem</h3>
-        <div class="value" id="state">-</div>
+        <span class="card-icon">🌧️</span>
+        <h3>Sensor Hujan</h3>
+        <div class="value" id="hujan">–</div>
+        <div class="keterangan" id="hujanKet">–</div>
+      </div>
+
+      <div class="card">
+        <span class="card-icon">☀️</span>
+        <h3>Sensor Cahaya (LDR)</h3>
+        <div class="value" id="ldr">–</div>
+        <div class="keterangan" id="ldrKet">–</div>
+      </div>
+
+      <div class="card">
+        <span class="card-icon">💧</span>
+        <h3>Kelembapan Udara</h3>
+        <div class="value" id="hum">–</div>
+        <div class="keterangan" id="humKet">–</div>
+      </div>
+
+    </div>
+
+    <div class="analytics-section">
+      <div class="section-title">
+        <h2>Analisis & Tren</h2>
+        <p>Lihat data sejarah berdasarkan tanggal</p>
+        <div class="filter-controls">
+          <input type="date" id="dateSelector" class="date-picker">
+          <button id="refreshBtn" class="btn-refresh">🔄 Segarkan</button>
+        </div>
+      </div>
+      
+      <div class="charts-grid">
+        <div class="card chart-card">
+          <h3>Tren Hujan</h3>
+          <div id="chartHujan"></div>
+        </div>
+        <div class="card chart-card">
+          <h3>Tren Cahaya</h3>
+          <div id="chartLdr"></div>
+        </div>
+        <div class="card chart-card">
+          <h3>Tren Kelembapan</h3>
+          <div id="chartHum"></div>
+        </div>
       </div>
     </div>
+
+    <!-- STATUS CENTER -->
+    <div class="status-section">
+      <div class="card status-card">
+        <span class="card-icon">⚙️</span>
+        <h3>Status Sistem</h3>
+        <div class="value" id="state">–</div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      &copy; 2025 Monitoring Pelindung Getah Karet &mdash; IoT Dashboard
+    </footer>
 
   </div>
 

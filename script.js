@@ -91,3 +91,149 @@ statusRef.on("value", (snapshot) => {
     stateEl.className = "value status-buruk";
   }
 });
+
+// ================== THINGSPEAK INTEGRATION ==================
+const TS_CHANNEL_ID = "3174391";
+const TS_API_KEY = "Z654WHA08ZUGCM0L";
+const TS_BASE_URL = `https://api.thingspeak.com/channels/${TS_CHANNEL_ID}/feeds.json?api_key=${TS_API_KEY}`;
+
+let chartHujan, chartLdr, chartHum;
+let refreshInterval;
+
+// Chart Options Builder
+function getChartOptions(name, color) {
+  return {
+    chart: {
+      type: 'area',
+      height: 240,
+      fontFamily: 'inherit',
+      toolbar: { show: false },
+      sparkline: { enabled: false }
+    },
+    colors: [color],
+    stroke: { curve: 'smooth', width: 2 },
+    grid: { show: false },
+    xaxis: {
+      type: 'datetime',
+      labels: { 
+        show: true,
+        style: { colors: '#86868b', fontSize: '10px' },
+        datetimeUTC: false
+      },
+      axisBorder: { show: false },
+      axisTicks: { show: false }
+    },
+    yaxis: { 
+      labels: { 
+        show: true,
+        style: { colors: '#86868b', fontSize: '10px' }
+      } 
+    },
+    fill: {
+      type: 'gradient',
+      gradient: {
+        shadeIntensity: 1,
+        opacityFrom: 0.3,
+        opacityTo: 0,
+        stops: [0, 90]
+      }
+    },
+    theme: { mode: 'dark' },
+    tooltip: { x: { format: 'HH:mm' } },
+    dataLabels: { enabled: false }
+  };
+}
+
+// Initialize Charts
+function initCharts() {
+  chartHujan = new ApexCharts(document.querySelector("#chartHujan"), getChartOptions("Hujan", "#00b0ff"));
+  chartLdr = new ApexCharts(document.querySelector("#chartLdr"), getChartOptions("Cahaya", "#ffab00"));
+  chartHum = new ApexCharts(document.querySelector("#chartHum"), getChartOptions("Kelembapan", "#00e676"));
+
+  chartHujan.render();
+  chartLdr.render();
+  chartHum.render();
+}
+
+// Fetch ThingSpeak Data
+async function fetchThingSpeak(dateStr = null) {
+  try {
+    let url = TS_BASE_URL;
+    const today = new Date().toISOString().split('T')[0];
+    const isToday = !dateStr || dateStr === today;
+
+    if (isToday) {
+      url += `&results=80`; // Tampilkan data terbaru jika hari ini
+    } else {
+      url += `&start=${dateStr}%2000:00:00&end=${dateStr}%2023:59:59`;
+    }
+
+    const response = await fetch(url);
+    const data = await response.json();
+    const feeds = data.feeds || [];
+
+    if (feeds.length === 0) {
+      console.warn("No data for date:", dateStr);
+      const emptySeries = [{ name: 'Data', data: [] }];
+      chartHujan.updateSeries(emptySeries);
+      chartLdr.updateSeries(emptySeries);
+      chartHum.updateSeries(emptySeries);
+      // alert("Tidak ada data pada tanggal yang dipilih.");
+      return;
+    }
+
+    const dataHujan = feeds.map(f => ({ x: new Date(f.created_at).getTime(), y: parseFloat(f.field1) || 0 }));
+    const dataLdr = feeds.map(f => ({ x: new Date(f.created_at).getTime(), y: parseFloat(f.field2) || 0 }));
+    const dataHum = feeds.map(f => ({ x: new Date(f.created_at).getTime(), y: parseFloat(f.field3) || 0 }));
+
+    chartHujan.updateSeries([{ name: 'Intensitas Hujan', data: dataHujan }]);
+    chartLdr.updateSeries([{ name: 'Intensitas Cahaya', data: dataLdr }]);
+    chartHum.updateSeries([{ name: 'Kelembapan', data: dataHum }]);
+
+  } catch (error) {
+    console.error("ThingSpeak Error:", error);
+  }
+}
+
+// Handle Auto-Refresh
+function startAutoRefresh() {
+  if (refreshInterval) clearInterval(refreshInterval);
+  refreshInterval = setInterval(() => {
+    const selectedDate = document.getElementById("dateSelector").value;
+    const today = new Date().toISOString().split('T')[0];
+    if (selectedDate === today) {
+      fetchThingSpeak(selectedDate);
+    }
+  }, 30000);
+}
+
+// Load UI and Startup Logic
+document.addEventListener("DOMContentLoaded", () => {
+  const dateSelector = document.getElementById("dateSelector");
+  const refreshBtn = document.getElementById("refreshBtn");
+  
+  // Set default date to today
+  const today = new Date().toISOString().split('T')[0];
+  dateSelector.value = today;
+
+  initCharts();
+  fetchThingSpeak(today);
+  startAutoRefresh();
+
+  // Event Listeners
+  dateSelector.addEventListener("change", (e) => {
+    const selectedDate = e.target.value;
+    fetchThingSpeak(selectedDate);
+    
+    // Disable interval if not today
+    if (selectedDate !== today) {
+      if (refreshInterval) clearInterval(refreshInterval);
+    } else {
+      startAutoRefresh();
+    }
+  });
+
+  refreshBtn.addEventListener("click", () => {
+    fetchThingSpeak(dateSelector.value);
+  });
+});
