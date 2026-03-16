@@ -81,14 +81,27 @@ statusRef.on("value", (snapshot) => {
   const status = snapshot.val();
   if (!status) return;
 
+  // -------- SERVO / SISTEM --------
   const stateEl = document.getElementById("state");
-
   if (status.servo === 1) {
     stateEl.innerText = "BAGUS (Pelindung Terbuka)";
     stateEl.className = "value status-bagus";
   } else {
     stateEl.innerText = "BURUK (Pelindung Tertutup)";
     stateEl.className = "value status-buruk";
+  }
+
+  // -------- KONEKTIVITAS (OFFLINE/LIVE) --------
+  const badge = document.getElementById("statusBadge");
+  const text = document.getElementById("statusText");
+  
+  // Asumsi ada path status/connected yang diupdate oleh alat
+  if (status.connected === true) {
+    badge.classList.remove("offline");
+    text.innerText = "Live";
+  } else {
+    badge.classList.add("offline");
+    text.innerText = "Offline";
   }
 });
 
