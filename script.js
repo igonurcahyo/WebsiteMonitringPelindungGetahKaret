@@ -164,13 +164,13 @@ function getChartOptions(seriesName, color) {
     tooltip: { x: { format: 'HH:mm' } },
     dataLabels: { enabled: false },
     noData: {
-      text: 'Memuat data...',
-      style: { color: '#86868b' }
+      text: 'Tidak ada data untuk tanggal ini.',
+      style: { color: '#86868b', fontSize: '14px' }
     }
   };
 }
 
-// Initialize Charts
+// Inisialisasi awal
 function initCharts() {
   chartHujan = new ApexCharts(document.querySelector("#chartHujan"), getChartOptions("Intensitas Hujan", "#00b0ff"));
   chartLdr = new ApexCharts(document.querySelector("#chartLdr"), getChartOptions("Intensitas Cahaya", "#ffab00"));
@@ -179,7 +179,17 @@ function initCharts() {
   chartHujan.render();
   chartLdr.render();
   chartHum.render();
-  console.log("Charts Initialized");
+  console.log("Charts started rendering...");
+}
+
+// Helper untuk update series dengan proteksi
+function safeUpdateSeries(chart, seriesName, data) {
+  if (!chart || typeof chart.updateSeries !== 'function') return;
+  try {
+    chart.updateSeries([{ name: seriesName, data: data }], true);
+  } catch (e) {
+    console.error(`Error updating ${seriesName}:`, e);
+  }
 }
 
 // Fetch ThingSpeak Data
@@ -206,10 +216,9 @@ async function fetchThingSpeak(dateStr = null) {
     console.log(`Received ${feeds.length} entries`);
 
     if (feeds.length === 0) {
-      const emptySeries = [{ data: [] }];
-      chartHujan.updateSeries(emptySeries);
-      chartLdr.updateSeries(emptySeries);
-      chartHum.updateSeries(emptySeries);
+      safeUpdateSeries(chartHujan, "Intensitas Hujan", []);
+      safeUpdateSeries(chartLdr, "Intensitas Cahaya", []);
+      safeUpdateSeries(chartHum, "Kelembapan", []);
       return;
     }
 
@@ -217,9 +226,9 @@ async function fetchThingSpeak(dateStr = null) {
     const dataLdr = feeds.map(f => ({ x: new Date(f.created_at).getTime(), y: parseFloat(f.field2) || 0 }));
     const dataHum = feeds.map(f => ({ x: new Date(f.created_at).getTime(), y: parseFloat(f.field3) || 0 }));
 
-    chartHujan.updateSeries([{ name: 'Intensitas Hujan', data: dataHujan }]);
-    chartLdr.updateSeries([{ name: 'Intensitas Cahaya', data: dataLdr }]);
-    chartHum.updateSeries([{ name: 'Kelembapan', data: dataHum }]);
+    safeUpdateSeries(chartHujan, "Intensitas Hujan", dataHujan);
+    safeUpdateSeries(chartLdr, "Intensitas Cahaya", dataLdr);
+    safeUpdateSeries(chartHum, "Kelembapan", dataHum);
 
   } catch (error) {
     console.error("ThingSpeak Error:", error);
@@ -248,8 +257,12 @@ document.addEventListener("DOMContentLoaded", () => {
   dateSelector.value = today;
 
   initCharts();
-  fetchThingSpeak(today);
-  startAutoRefresh();
+  
+  // Beri jeda 500ms agar grafik selesai render sebelum fetch data pertama
+  setTimeout(() => {
+    fetchThingSpeak(today);
+    startAutoRefresh();
+  }, 800);
 
   // Event Listeners
   dateSelector.addEventListener("change", (e) => {
