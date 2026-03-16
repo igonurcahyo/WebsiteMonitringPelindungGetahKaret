@@ -164,7 +164,7 @@ function getChartOptions(seriesName, color) {
     tooltip: { x: { format: 'HH:mm' } },
     dataLabels: { enabled: false },
     noData: {
-      text: 'Tidak ada data untuk tanggal ini.',
+      text: undefined,
       style: { color: '#86868b', fontSize: '14px' }
     }
   };
@@ -179,12 +179,19 @@ function initCharts() {
   chartHujan.render();
   chartLdr.render();
   chartHum.render();
-  console.log("Charts started rendering...");
 }
 
-// Helper untuk update series dengan proteksi
-function safeUpdateSeries(chart, seriesName, data) {
+// Helper untuk update series dengan proteksi & pembersihan pesan "No Data"
+function updateChartData(chart, seriesName, data) {
   if (!chart || typeof chart.updateSeries !== 'function') return;
+  
+  const hasData = data && data.length > 0;
+  
+  // Update options untuk menghilangkan/memunculkan pesan "No Data"
+  chart.updateOptions({
+    noData: { text: hasData ? undefined : "Tidak ada data untuk tanggal ini." }
+  }, false, false); // false, false agar tidak re-render berat
+
   try {
     chart.updateSeries([{ name: seriesName, data: data }], true);
   } catch (e) {
@@ -200,12 +207,12 @@ async function fetchThingSpeak(dateStr = null) {
     let url = TS_BASE_URL;
 
     if (isToday) {
-      url += `&results=100`; // Ambil data terakhir
+      url += `&results=100`;
     } else {
       url += `&start=${dateStr}%2000:00:00&end=${dateStr}%2023:59:59`;
     }
 
-    console.log(`Fetching from ThingSpeak: ${isToday ? 'Today/Recent' : dateStr}`);
+    console.log(`Fetching: ${isToday ? 'Today' : dateStr}`);
     
     const response = await fetch(url);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -215,20 +222,13 @@ async function fetchThingSpeak(dateStr = null) {
     
     console.log(`Received ${feeds.length} entries`);
 
-    if (feeds.length === 0) {
-      safeUpdateSeries(chartHujan, "Intensitas Hujan", []);
-      safeUpdateSeries(chartLdr, "Intensitas Cahaya", []);
-      safeUpdateSeries(chartHum, "Kelembapan", []);
-      return;
-    }
-
     const dataHujan = feeds.map(f => ({ x: new Date(f.created_at).getTime(), y: parseFloat(f.field1) || 0 }));
     const dataLdr = feeds.map(f => ({ x: new Date(f.created_at).getTime(), y: parseFloat(f.field2) || 0 }));
     const dataHum = feeds.map(f => ({ x: new Date(f.created_at).getTime(), y: parseFloat(f.field3) || 0 }));
 
-    safeUpdateSeries(chartHujan, "Intensitas Hujan", dataHujan);
-    safeUpdateSeries(chartLdr, "Intensitas Cahaya", dataLdr);
-    safeUpdateSeries(chartHum, "Kelembapan", dataHum);
+    updateChartData(chartHujan, "Intensitas Hujan", dataHujan);
+    updateChartData(chartLdr, "Intensitas Cahaya", dataLdr);
+    updateChartData(chartHum, "Kelembapan", dataHum);
 
   } catch (error) {
     console.error("ThingSpeak Error:", error);
