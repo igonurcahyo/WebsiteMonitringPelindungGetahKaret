@@ -95,13 +95,13 @@ statusRef.on("value", (snapshot) => {
   const badge = document.getElementById("statusBadge");
   const text = document.getElementById("statusText");
   
-  // Asumsi ada path status/connected yang diupdate oleh alat
-  if (status.connected === true) {
-    badge.classList.remove("offline");
-    text.innerText = "Live";
-  } else {
+  // Jika field 'connected' tidak ada, anggap Live (agar tidak membingungkan sebelum hardware diupdate)
+  if (status.connected === false) {
     badge.classList.add("offline");
     text.innerText = "Offline";
+  } else {
+    badge.classList.remove("offline");
+    text.innerText = "Live";
   }
 });
 
@@ -112,6 +112,13 @@ const TS_BASE_URL = `https://api.thingspeak.com/channels/${TS_CHANNEL_ID}/feeds.
 
 let chartHujan, chartLdr, chartHum;
 let refreshInterval;
+
+// Helper to get Local Date as YYYY-MM-DD
+function getLocalDateString() {
+  const now = new Date();
+  const offset = now.getTimezoneOffset() * 60000;
+  return new Date(now - offset).toISOString().split('T')[0];
+}
 
 // Chart Options Builder
 function getChartOptions(name, color) {
@@ -174,7 +181,7 @@ function initCharts() {
 async function fetchThingSpeak(dateStr = null) {
   try {
     let url = TS_BASE_URL;
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateString();
     const isToday = !dateStr || dateStr === today;
 
     if (isToday) {
@@ -215,7 +222,7 @@ function startAutoRefresh() {
   if (refreshInterval) clearInterval(refreshInterval);
   refreshInterval = setInterval(() => {
     const selectedDate = document.getElementById("dateSelector").value;
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateString();
     if (selectedDate === today) {
       fetchThingSpeak(selectedDate);
     }
@@ -228,7 +235,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const refreshBtn = document.getElementById("refreshBtn");
   
   // Set default date to today
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDateString();
   dateSelector.value = today;
 
   initCharts();
