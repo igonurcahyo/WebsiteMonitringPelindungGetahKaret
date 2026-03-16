@@ -121,20 +121,20 @@ function getLocalDateString() {
 }
 
 // Chart Options Builder
-function getChartOptions(name, color) {
+function getChartOptions(seriesName, color) {
   return {
+    series: [{ name: seriesName, data: [] }],
     chart: {
       type: 'area',
       height: 240,
       fontFamily: 'inherit',
       toolbar: { show: false },
-      sparkline: { enabled: false },
-      zoom: { enabled: false },
-      selection: { enabled: false }
+      animations: { enabled: true },
+      zoom: { enabled: false }
     },
     colors: [color],
     stroke: { curve: 'smooth', width: 2 },
-    grid: { show: false },
+    grid: { borderColor: 'rgba(255,255,255,0.05)', strokeDashArray: 4 },
     xaxis: {
       type: 'datetime',
       labels: { 
@@ -162,45 +162,54 @@ function getChartOptions(name, color) {
     },
     theme: { mode: 'dark' },
     tooltip: { x: { format: 'HH:mm' } },
-    dataLabels: { enabled: false }
+    dataLabels: { enabled: false },
+    noData: {
+      text: 'Memuat data...',
+      style: { color: '#86868b' }
+    }
   };
 }
 
 // Initialize Charts
 function initCharts() {
-  chartHujan = new ApexCharts(document.querySelector("#chartHujan"), getChartOptions("Hujan", "#00b0ff"));
-  chartLdr = new ApexCharts(document.querySelector("#chartLdr"), getChartOptions("Cahaya", "#ffab00"));
+  chartHujan = new ApexCharts(document.querySelector("#chartHujan"), getChartOptions("Intensitas Hujan", "#00b0ff"));
+  chartLdr = new ApexCharts(document.querySelector("#chartLdr"), getChartOptions("Intensitas Cahaya", "#ffab00"));
   chartHum = new ApexCharts(document.querySelector("#chartHum"), getChartOptions("Kelembapan", "#00e676"));
 
   chartHujan.render();
   chartLdr.render();
   chartHum.render();
+  console.log("Charts Initialized");
 }
 
 // Fetch ThingSpeak Data
 async function fetchThingSpeak(dateStr = null) {
   try {
-    let url = TS_BASE_URL;
     const today = getLocalDateString();
     const isToday = !dateStr || dateStr === today;
+    let url = TS_BASE_URL;
 
     if (isToday) {
-      url += `&results=80`; // Tampilkan data terbaru jika hari ini
+      url += `&results=100`; // Ambil data terakhir
     } else {
       url += `&start=${dateStr}%2000:00:00&end=${dateStr}%2023:59:59`;
     }
 
+    console.log(`Fetching from ThingSpeak: ${isToday ? 'Today/Recent' : dateStr}`);
+    
     const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    
     const data = await response.json();
     const feeds = data.feeds || [];
+    
+    console.log(`Received ${feeds.length} entries`);
 
     if (feeds.length === 0) {
-      console.warn("No data for date:", dateStr);
-      const emptySeries = [{ name: 'Data', data: [] }];
+      const emptySeries = [{ data: [] }];
       chartHujan.updateSeries(emptySeries);
       chartLdr.updateSeries(emptySeries);
       chartHum.updateSeries(emptySeries);
-      // alert("Tidak ada data pada tanggal yang dipilih.");
       return;
     }
 
